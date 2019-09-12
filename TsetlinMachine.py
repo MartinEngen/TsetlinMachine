@@ -59,6 +59,7 @@ if __name__ == '__main__':
     t = 1
     n_states_per_decision = 3
 
+
     COLOR_WHEEL = ['k', 'g', 'm', 'r', 'c', 'b']
     n_rounds = 500
 
