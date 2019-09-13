@@ -6,10 +6,11 @@ import statistics
 import numpy as np
 import json
 
-from utils import eval_xor, eval_and, eval_or, type_1_threshold, type_1_feedback, type_2_threshold
+from utils import eval_xor, eval_and, eval_or, type_1_threshold, type_1_feedback, type_2_threshold, type_2_feedback
 
 POSITIVE = 'positive'
 NEGATIVE = 'negative'
+
 
 class Clause:
     def __init__(self, polarity: bool, tsetlins: list):
@@ -19,6 +20,8 @@ class Clause:
         # This Clause's assigned team of tsetlins
         self.tsetlins = tsetlins
 
+    def get_x_ta(self, x_num):
+        return [self.tsetlins[x_num * 2], self.tsetlins[(x_num * 2) + 1]]
 
 class Tsetlin:
     def __init__(self, n, should_invert):
@@ -29,11 +32,7 @@ class Tsetlin:
 
         self.should_invert = should_invert
 
-    def is_include(self):
-        if self.state >= self.n:
-            return True
-        else:
-            return False
+
 
     def reward(self) -> None:
         if self.n >= self.state > 1:
@@ -46,6 +45,12 @@ class Tsetlin:
             self.state += 1
         elif self.state > self.n:
             self.state -= 1
+
+    def is_include(self):
+        if self.state >= self.n:
+            return True
+        else:
+            return False
 
     def make_decision(self) -> bool:
         if self.state <= self.n:
@@ -125,37 +130,12 @@ def obtain_conjunctive_clauses(clause, tr):
 
     # CHECK STATE OF EACH AUTOMATA
     # BUT ONLY 2 AT A TIME, INVERSE AND NON INVERSE
-    print(f'{x1} - {x2}')
     conjuction = []
     for index, ta in enumerate(clause.tsetlins):
         # EACH TA.
         if ta.is_include():
             conjuction.append(ta.literal_value(input_list[index]))
-        else:
-            print("-- Exclude --")
 
-    print("=========== CONJUNCTION ============")
-    print(conjuction)
-
-        # X1 -> X2 -> -X1 -> -X2
-        # FIRST TWO,    CHECK x1
-        # Second Two,   Check x2
-
-        #print(f'eval {ta.literal_value(x1)} - Include? {ta.is_include()}')
-        #print("Each TA running")
-
-
-
-
-    # WE WANT TO FIGURE OUT WHAT x1 | x2 to Inclue, and what if INVERSE OR NO
-    # ta1_opinion = team[0].consider_literal(x1)
-    # ta2_opinion = team[1].consider_literal(x1)
-    # ta3_opinion = team[2].consider_literal(x2)
-    # ta4_opinion = team[3].consider_literal(x2)
-
-    # res = [ta1_opinion, ta2_opinion, ta3_opinion, ta4_opinion]
-
-    # print(f'Opinions: ta1: {ta1_opinion} ta2: {ta2_opinion} ta3: {ta3_opinion} ta4: {ta4_opinion}')
     return conjuction
 
 
@@ -165,7 +145,7 @@ def train_tsetlin_machine():
     n_clauses = 2
     s = 3.9
     t = 1
-    n_states_per_decision = 3
+    n_states_per_decision = 100
     # 0 1 0 1 1 1 0 1 1 1 1 0
     bits1 = (0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1)
     #bits2 = (0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 0)
@@ -173,17 +153,11 @@ def train_tsetlin_machine():
 
     conjunction_test = [False, True, False, True]
     res = eval_xor(conjunction_test)
-    print(res)
-    print(eval_and(conjunction_test))
-    print(eval_or(conjunction_test))
-    # Produce Machines
-    # Every even item in list is +
-    # Every odd  item is -
-    # Collect each team (4x TA in each)
     clauses = generate_clauses(n_clauses, n_tsetlins_per_clause, n_states_per_decision)
     training_data = get_training_data('XOR')
     # LOOP TRAIN HERE...
-    for i in range(10):
+    success = 0
+    for i in range(10000):
 
         # GetNextTrainingExample
         tr = training_data[i % len(training_data)]
@@ -192,7 +166,6 @@ def train_tsetlin_machine():
         data = tr.copy()
         del data[-1]
 
-        #print("DATA: " + str(data))
         y = tr[2]
         c = {
             POSITIVE: [],
@@ -205,45 +178,53 @@ def train_tsetlin_machine():
             c[NEGATIVE].append(obtain_conjunctive_clauses(negative_clauses, tr))
 
         votes = 0
-        # print(c)
-        ## WHAT DID IT MEAN?
+
+        positive_results = []
+        negative_results = []
         for conjunction in c[POSITIVE]:
-            # print(eval_or(conjunction)) # LOOKING FOR TRUE (Y=1)
             con_vote = eval_xor(conjunction)
+            positive_results.append(con_vote)
             if(con_vote):
                 votes = votes + 1
 
         for conjunction in c[NEGATIVE]:
-            # print(eval_or(conjunction)) # LOOKING FOR FALSE (Y=0)
             con_vote = eval_xor(conjunction)
+            negative_results.append(con_vote)
+
             if(con_vote):
                 votes = votes - 1
 
+        if(i > 1000):
+            if votes > 0 and y == 1:
+                success = success + 1
+            if votes <= 0 and y == 0:
+                success = success + 1
 
         # FEEDBACK
-        for positive_clause in clauses[POSITIVE]:
+        for index, positive_clause in enumerate(clauses[POSITIVE]):
             if y == 1:
                 if random.random() <= type_1_threshold(t, votes):
-                    type_1_feedback(data, positive_clause)
+                    clause_result = positive_results[index]
+                    type_1_feedback(data, positive_clause, clause_result, s)
                     # TEAM IS GOING THROUGH Type 1 FEEDBACK
-                    print("TYPE I FEEDBACK")
-
-
+                    # print("TYPE I FEEDBACK")
             else:
                 if random.random() <= type_2_threshold(t, votes):
-                    print("TYPE II FEEDBACK")
+                    clause_result = positive_results[index]
+                    type_2_feedback(data, positive_clause, clause_result, s)
+                    # print("TYPE II FEEDBACK")
 
-        for negative_clauses in clauses[NEGATIVE]:
-            if(y == 1):
+        for index, negative_clause in enumerate(clauses[NEGATIVE]):
+            if y == 1:
                 if random.random() <= type_2_threshold(t, votes):
-
-                    print("NEGATIVE TYPE II FEEDBACK")
-                    print(negative_clauses)
+                    clause_result = negative_results[index]
+                    type_2_feedback(data, negative_clause, clause_result, s)
+                    # print("NEGATIVE TYPE II FEEDBACK")
+                    # print(negative_clauses)
             else:
                 if random.random() <= type_1_threshold(t, votes):
-                    type_1_feedback(data, negative_clauses)
-                    print("NEGATIVE TYPE I FEEDBACK")
-
+                    clause_result = negative_results[index]
+                    type_1_feedback(data, negative_clause, clause_result, s)
 
 
 
@@ -254,29 +235,4 @@ if __name__ == '__main__':
     t = 1
     n_states_per_decision = 3
     train_tsetlin_machine()
-    COLOR_WHEEL = ['k', 'g', 'm', 'r', 'c', 'b']
-    n_rounds = 500
 
-    plots = []
-    total_result = []
-
-    # Create instances of the individual sensors
-    # tsetlins = [Tsetlin(n_states_per_decision, invert_bool) for i in range(n_tsetlins_per_clause)]
-
-    tsetlins = []
-    """
-    for i in range(n_tsetlins_per_clause):
-        if i % 2 == 0:
-            tsetlins.append(Tsetlin(n_states_per_decision, give_bool))
-        else:
-            tsetlins.append(Tsetlin(n_states_per_decision, invert_bool))
-    """
-
-    results = []
-    sum_yes_replies = []
-
-    for round_index in range(n_rounds):
-        round_decisions = [tsetlin.make_decision() for tsetlin in tsetlins]
-        round_yes_replies = count_yes_replies(round_decisions)
-        round_penalty_limit = get_penalty_limit(round_yes_replies)
-        [give_feedback(round_penalty_limit, tsetlin) for tsetlin in tsetlins]
