@@ -47,7 +47,6 @@ def train_clauses(clauses: list, rounds: int, current_operation: str):
                 current_clause = clauses[index]
                 type_1_feedback(sample_x, current_clause, res, s)
 
-            # True Positive
         # sample_y == 0
         else:
             # False Positives
@@ -80,7 +79,7 @@ if __name__ == '__main__':
         clauses = generate_clauses(n_clauses, n_tsetlins_per_clause, n_states_per_decision)
         train_clauses(clauses, training_rounds, operator)
 
-        print("*** TRANING IS DONE.. ****")
+        print("***  Training Done ****")
         print(f'Operator {operator}')
         clauses[0].show_current_clause()
         clauses[0].show_states_per_ta()
