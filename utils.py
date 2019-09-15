@@ -1,28 +1,35 @@
+import json
 import random
 from functools import reduce
 from operator import xor, or_, and_
 
 
 def eval_and(conjunction):
-    return reduce(and_, conjunction) #all(conjunction)
+    if len(conjunction) <= 1:
+        return 0
+    else:
+        return reduce(and_, conjunction) #all(conjunction)
 
 
 def eval_or(conjunction):
-    return reduce(or_, conjunction) #return any(conjunction)
+    if len(conjunction) <= 1:
+        return 0
+    else:
+        return reduce(or_, conjunction) #return any(conjunction)
 
 
 def eval_xor(conjunction):
-    if not conjunction:
-        return False
+    if len(conjunction) <= 1:
+        return 0
     else:
         return reduce(xor, conjunction)
 
 
 def medium_chance(s):
-    return random.random() < (s - 1) / s
+    return random.random() < ((s - 1) / s)
 
 def small_chance(s):
-    return random.random() < 1 / s
+    return random.random() < (1 / s)
 
 def type_1_feedback(inputs: list, clause, clause_result, s):
     # Fights False Negatives
@@ -31,51 +38,48 @@ def type_1_feedback(inputs: list, clause, clause_result, s):
         # One Way
         for index, current_input in enumerate(inputs):
             tsetlins = clause.get_x_ta(index)
-            # print(f'Length: {len(tsetlins)} - index: {index}')
             ######## NORMAL ########
-            is_include = tsetlins[0].is_include
+            is_include = tsetlins[0].is_include()
 
             if is_include:
                 if current_input == 1:
-                    if random.random() < (s-1)/s:
+                    if medium_chance(s):
                         # Give Reward
                         tsetlins[0].reward()
 
             else:
                 if current_input == 1:
-                    if random.random() < (s-1)/s:
+                    if medium_chance(s):
                         tsetlins[0].penalize()
                         # Give Penalty
                 else:
-                    if random.random() < 1 / s:
+                    if small_chance(s):
                         tsetlins[0].reward()
 
             ######## INVERSE #############
-            inverse_is_include = tsetlins[1].is_include
+            inverse_is_include = tsetlins[1].is_include()
             if inverse_is_include:
                 # Inverse Right side
                 if current_input == 0:
-                    if random.random() < (s - 1) / s:
+                    if medium_chance(s):
                         # Give Reward
                         tsetlins[1].reward()
 
             else:
                 # Inverse Right side
                 if current_input == 0:
-                    if random.random() < (s - 1) / s:
+                    if medium_chance(s):
                         tsetlins[1].penalize()
                         # Give Penalty
                 else:
-                    if random.random() < 1 / s:
+                    if small_chance(s):
                         tsetlins[1].reward()
 
     else:
         for index, current_input in enumerate(inputs):
-            # print(f'current input -> {current_input}')
             tsetlins = clause.get_x_ta(index)
-            # print(f'Length: {len(tsetlins)} - index: {index}')
             ######## NORMAL ########
-            is_include = tsetlins[0].is_include
+            is_include = tsetlins[0].is_include()
 
             if is_include:
                 if small_chance(s):
@@ -87,12 +91,11 @@ def type_1_feedback(inputs: list, clause, clause_result, s):
                     tsetlins[0].reward()
 
             ######## INVERSE #############
-            inverse_is_include = tsetlins[1].is_include
+            inverse_is_include = tsetlins[1].is_include()
             if inverse_is_include:
                 # Inverse Right side
-                if random.random() < (s - 1) / s:
-                    # Give Reward
-                    tsetlins[1].reward()
+                if medium_chance(s):
+                    tsetlins[1].penalize()
 
             else:
                 if small_chance(s):
@@ -105,10 +108,11 @@ def type_2_feedback(inputs: list, clause, clause_result, s):
     if clause_result:
         # One Way
         for index, current_input in enumerate(inputs):
+            # 0 -> NOR - 1 -> NEG
             tsetlins = clause.get_x_ta(index)
 
             ######## NORMAL ########
-            is_include = tsetlins[0].is_include
+            is_include = tsetlins[0].is_include()
 
             if is_include:
                 # No Action
@@ -119,14 +123,14 @@ def type_2_feedback(inputs: list, clause, clause_result, s):
                     tsetlins[0].penalize()
 
             ######## INVERTED ########
-            is_include = tsetlins[1].is_include
+            is_include = tsetlins[1].is_include()
 
             if is_include:
                 pass
 
             else:
                 if current_input == 1:
-                    tsetlins[0].penalize()
+                    tsetlins[1].penalize()
 
 
 def type_1_threshold(t, vote_sum):
@@ -135,3 +139,10 @@ def type_1_threshold(t, vote_sum):
 
 def type_2_threshold(t, vote_sum):
     return (t + max(-t, min(t, vote_sum)))/(2 * t)
+
+
+def get_training_data(t: str) -> list:
+    filename = "training_data.json"
+    if filename:
+        with open(filename, 'r') as f:
+            return json.load(f)[t]
