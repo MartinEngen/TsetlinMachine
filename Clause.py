@@ -19,6 +19,24 @@ class Clause:
                 c.append(f'{st}X{ta.designated_literal}')
         print(c)
 
+    def sum_included_literals(self):
+        sum = 0
+        for ta in self.tsetlins:
+            if ta.is_include():
+                sum = sum + 1
+
+        return sum
+
+    def current_clause(self):
+        c = []
+        for ta in self.tsetlins:
+            if ta.is_include():
+                st = ''
+                if ta.should_invert:
+                    st = '-'
+                c.append(f'{st}X{ta.designated_literal}')
+        return c
+
     def show_states_per_ta(self):
         states = []
 

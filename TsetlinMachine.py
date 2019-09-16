@@ -59,6 +59,11 @@ def train_clauses(clauses: list, rounds: int, current_operation: str):
             else:
                 pass
 
+def isCorrectClauseLength(n):
+    if n == 2:
+        return True
+    else:
+        return False
 
 if __name__ == '__main__':
     n_tsetlins_per_clause = 4  # Must be 2x input
@@ -76,14 +81,22 @@ if __name__ == '__main__':
 
     for operator in bit_operators_to_learn:
 
-        clauses = generate_clauses(n_clauses, n_tsetlins_per_clause, n_states_per_decision)
-        train_clauses(clauses, training_rounds, operator)
+        while(True):
+            clauses = generate_clauses(n_clauses, n_tsetlins_per_clause, n_states_per_decision)
+            train_clauses(clauses, training_rounds, operator)
 
-        print("***  Training Done ****")
-        print(f'Operator {operator}')
-        clauses[0].show_current_clause()
-        clauses[0].show_states_per_ta()
+            clause_0_sum = clauses[0].sum_included_literals()
+            clause_1_sum = clauses[1].sum_included_literals()
 
-        clauses[1].show_current_clause()
-        clauses[1].show_states_per_ta()
+            clause_0 = clauses[0].current_clause()
+            clause_1 = clauses[1].current_clause()
 
+            if isCorrectClauseLength(clause_0_sum) and isCorrectClauseLength(clause_1_sum) and clause_0 != clause_1:
+                print("***  Training Done ****")
+                print(f'Operator {operator}')
+                clauses[0].show_current_clause()
+                clauses[0].show_states_per_ta()
+
+                clauses[1].show_current_clause()
+                clauses[1].show_states_per_ta()
+                break
