@@ -30,6 +30,44 @@ class Clause:
 
         print(states)
 
+    def get_ta_states_with_literals(self):
+        result = []
+
+        for ta in self.tsetlins:
+            state = ta.state
+            is_include = ta.is_include()
+            literal = ta.designated_literal
+            is_inverting = ta.should_invert
+
+            ta_status = {
+                'state': state,
+                'is_include': is_include,
+                'literal': literal,
+                'is_inverting': is_inverting
+            }
+
+            result.append(ta_status)
+
+        return result
+
+    def sum_included_literals(self):
+        sum = 0
+        for ta in self.tsetlins:
+            if ta.is_include():
+                sum = sum + 1
+
+        return sum
+
+    def current_clause(self):
+        c = []
+        for ta in self.tsetlins:
+            if ta.is_include():
+                st = ''
+                if ta.should_invert:
+                    st = '-'
+                c.append(f'{st}X{ta.designated_literal}')
+        return c
+
 
 def generate_tsetlins(n_tsetlins_per_clause: int, n_states_per_decision: int) -> list:
     tsetlins = []
