@@ -144,7 +144,7 @@ def train_clauses(clauses: list, rounds: int, current_operation: str):
     return training_result_data
 
 
-def isCorrectClauseLength(n):
+def is_correct_clause_length(n):
     if n == 2:
         return True
     else:
@@ -203,7 +203,7 @@ if __name__ == '__main__':
             r['ta_states'] = []
 
             round_accuracy = {
-                'name': f'Training Result {operator}',
+                'name': f'Training Result {operator.capitalize()}',
                 'data': training_result_data['percent_on_all_inputs']
             }
 
@@ -238,7 +238,7 @@ if __name__ == '__main__':
                 clause_0 = clauses[0].current_clause()
                 clause_1 = clauses[1].current_clause()
 
-                if isCorrectClauseLength(clause_0_sum) and isCorrectClauseLength(clause_1_sum) and clause_0 != clause_1:
+                if is_correct_clause_length(clause_0_sum) and is_correct_clause_length(clause_1_sum) and clause_0 != clause_1:
                     print("***  Training Done ****")
                     print(f'Operator {operator}')
                     clauses[0].show_current_clause()

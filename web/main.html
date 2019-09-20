@@ -55,7 +55,10 @@
           <div class="mdl-layout-spacer"></div>
           <!-- Navigation -->
           <nav class="mdl-navigation">
-               <button onclick="getXor()" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" id="button">
+                <!-- BUTTONS -->
+              <div class="mdl-cell mdl-cell--12-col">
+                <!-- Colored raised button -->
+                <button onclick="getXor()" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
                     XOR
                 </button><!-- Colored raised button -->
                 <button onclick="getAnd()" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
@@ -73,6 +76,7 @@
                 <button onclick="train_force_correct()" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">
                   Cheat Train
                 </button>
+              </div>
           </nav>
         </div>
       </header>
@@ -156,7 +160,7 @@
   let roundResultChart = Highcharts.chart('roundChart', {
 
     title: {
-        text: 'Solar Employment Growth by Sector, 2010-2016'
+        text: 'Round Results (Grouped by 4 data)'
     },
     yAxis: {
         title: {
@@ -182,10 +186,7 @@
         type: 'line',
         zoomType: 'x'
     },
-    series: [{
-        name: 'Installation',
-        data: [24, 50, 31, 12, 26, 12, 60, 20]
-    }],
+    series: [],
 
     responsive: {
         rules: [{
