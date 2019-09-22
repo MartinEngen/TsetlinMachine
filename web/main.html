@@ -51,6 +51,7 @@
         <div class="mdl-layout__header-row">
           <!-- Title -->
           <span class="mdl-layout-title">Tsetlin Automata</span>
+          <span class="mdl-layout-title" id="current_operator"></span>
           <!-- Add spacer, to align navigation to the right -->
           <div class="mdl-layout-spacer"></div>
           <!-- Navigation -->
@@ -83,41 +84,18 @@
       <div class="demo-ribbon"></div>
       <main class="demo-main mdl-layout__content">
         <div class="demo-container mdl-grid">
-
-                <!-- BUTTONS -->
               <div class="mdl-cell mdl-cell--12-col">
-                <!-- Colored raised button -->
-                <button onclick="getXor()" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored" id="button">
-                    XOR
-                </button><!-- Colored raised button -->
-                <button onclick="getAnd()" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
-                    AND
-                </button><!-- Colored raised button -->
-                <button onclick="getOr()" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
-                    OR
-                </button>
-
-                <!-- Raised button with ripple -->
-                <button onclick="train_normal()" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">
-                  Train
-                </button>
-                <!-- Raised button with ripple -->
-                <button onclick="train_force_correct()" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">
-                  Cheat Train
-                </button>
-              </div>
-              <div class="mdl-cell mdl-cell--12-col">
-                <h2>Clauses</h2>
+                <h2>Clauses <span class="current_operator"></span></h2>
                 <div id="container" style="height: 400px; max-width: 800px; margin: 0 auto"></div>
               </div>
 
               <div class="mdl-cell mdl-cell--12-col">
-                <h2>Rounds</h2>
+                <h2>Rounds <span class="current_operator"></span></h2>
                 <div id="roundChart" style="height: 400px; max-width: 800px; margin: 0 auto"></div>
               </div>
 
               <div class="mdl-cell mdl-cell--12-col">
-                <h2>Vote Combination</h2>
+                <h2>Vote Combination</h2> <span class="current_operator"></span>
                 <div id="accumVotes" style="height: 400px; max-width: 800px; margin: 0 auto"></div>
               </div>
 
@@ -210,7 +188,7 @@
         type: 'column'
     },
     title: {
-        text: 'Column chart with negative values'
+        text: 'Vote combination'
     },
     xAxis: {
         categories: []
@@ -218,7 +196,7 @@
     yAxis: {
     min: 0,
     title: {
-        text: 'Total fruit consumption'
+        text: 'Amount of votes (per group)'
     },
     stackLabels: {
         enabled: true,
@@ -309,14 +287,16 @@
   }
 
   async function getXor() {
-      let value = await eel.get_xor()();
-      drawCharts(value)
+    let value = await eel.get_xor()();
+    document.getElementById("current_operator").textContent = "\s - XOR";
+    drawCharts(value)
   }
 
   async function getAnd() {
       // Get corresponding data,
-      let value = await eel.get_and()();
-      drawCharts(value)
+    let value = await eel.get_and()();
+    document.getElementById("current_operator").textContent = " \s - AND";
+    drawCharts(value)
 
 
   }
@@ -324,6 +304,7 @@
   async function getOr() {
       // Get corresponding data,
     let value = await eel.get_or()();
+    document.getElementById("current_operator").textContent = "\s - OR";
     drawCharts(value)
   }
   </script>

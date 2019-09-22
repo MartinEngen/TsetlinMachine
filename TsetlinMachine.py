@@ -150,6 +150,7 @@ def is_correct_clause_length(n):
     else:
         return False
 
+
 if __name__ == '__main__':
     eel.init('web') # GUI related
 
@@ -187,7 +188,6 @@ if __name__ == '__main__':
     @eel.expose
     def run_operators():
         for operator in bit_operators_to_learn:
-
             clauses = generate_clauses(n_clauses, n_tsetlins_per_clause, n_states_per_decision)
             training_result_data = train_clauses(clauses, training_rounds, operator)
 
@@ -206,6 +206,7 @@ if __name__ == '__main__':
                 'name': f'Training Result {operator.capitalize()}',
                 'data': training_result_data['percent_on_all_inputs']
             }
+
 
             r['round_accuracy'] = round_accuracy
             r['accum_votes_series'] = training_result_data['accum_votes_series']
